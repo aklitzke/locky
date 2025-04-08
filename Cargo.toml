@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 feanor-math = "1.5.3"
-rand = "0.8.5"
+rand = "0.9.0"
 aes-gcm = "0.10.3"
 aes-kw = "0.2.1"
 bitvec = "1.0.1"
