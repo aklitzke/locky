@@ -132,15 +132,14 @@ where
     let ring = ring();
     let ring_v = ring.decompress(v);
     let ring_hs = hs.map(|h| ring.decompress(h));
-    let bits: bv::BitVec<_, bv::Msb0> = ring
-        .assemble_decryptions(ring_v, ring_hs)
-        .into_iter()
-        .map(|i| {
-            // println!("is: {}", i);
-            debug_assert!(i <= 1);
-            i == 1
-        })
-        .collect();
+    let assembled = ring.assemble_decryptions(ring_v, ring_hs);
+    let mut bits = bv::BitVec::<_, bv::Msb0>::repeat(false, N);
+    ring.0.terms(&assembled)
+        .for_each(|(i, pow)| {
+            // println!("is: {} {}", *i, pow);
+            assert!(*i == 1);
+            bits.set(pow, true);
+        });
     bits.into_vec().try_into().unwrap()
 }
 
