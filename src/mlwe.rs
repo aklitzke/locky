@@ -543,7 +543,7 @@ fn test_compressed_ss_mlwe_once() {
             sorted_shares[dest as usize - 1].push((dest, share));
         }
     }
-    let a_seed: [u8; 32] = rand::thread_rng().gen();
+    let a_seed: [u8; 32] = rand::rng().random();
     let mut sks = vec![];
     let mut pks = vec![];
     for shares in sorted_shares {
@@ -556,7 +556,7 @@ fn test_compressed_ss_mlwe_once() {
         .into_iter()
         .fold([[0; N]; K], |acc, pk| add_public_keys(acc, pk));
 
-    let pt: Plaintext = rand::thread_rng().gen();
+    let pt: Plaintext = rand::rng().random();
     let (v, u) = encrypt(&pk, &a_seed, &pt);
 
     let indexes: Vec<_> = (1..PARTIES as u32 + 1).collect();
@@ -577,12 +577,12 @@ fn test_plain_ss_mlwe() {
 #[test]
 fn test_a_seed() {
     let ring_h = ring();
-    let a_seed_1: [u8; 32] = rand::thread_rng().gen();
+    let a_seed_1: [u8; 32] = rand::rng().random();
     assert_eq!(
         ring_h.a_from_seed(&a_seed_1.clone()),
         ring_h.a_from_seed(&a_seed_1.clone())
     );
-    let a_seed_2: [u8; 32] = rand::thread_rng().gen();
+    let a_seed_2: [u8; 32] = rand::rng().random();
     assert_ne!(ring_h.a_from_seed(&a_seed_1), ring_h.a_from_seed(&a_seed_2))
 }
 
@@ -666,7 +666,7 @@ fn test_plain_ss_mlwe_once() {
     }
 
     // generate just a single, shared 'A', clone for later use
-    let a_seed: [u8; 32] = rand::thread_rng().gen();
+    let a_seed: [u8; 32] = rand::rng().random();
     let a = ring_h.a_from_seed(&a_seed);
     if DEBUGPRINT {
         println!("A:");
@@ -788,14 +788,14 @@ fn test_mlwe_once() {
     let ring = FreeAlgebraImpl::new(base_ring, x_pow_rank, default_memory_provider!());
 
     const DEBUGPRINT: bool = false;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut rng2 = rng.clone();
     let mut uniform_random_poly =
-        || ring.from_canonical_basis((0..N).map(|_| base_ring.random_element(|| rng.gen::<u64>())));
+        || ring.from_canonical_basis((0..N).map(|_| base_ring.random_element(|| rng.random::<u64>())));
     let mut binomial_random_poly = || {
         let bits_needed = N * ETA * 2;
         let bytes: Vec<u8> = (0..(bits_needed.div_ceil(64)))
-            .map(|_| rng2.gen::<u64>().to_be_bytes())
+            .map(|_| rng2.random::<u64>().to_be_bytes())
             .flatten()
             .collect();
         let bits = bv::BitVec::<_, bv::Msb0>::from_vec(bytes);

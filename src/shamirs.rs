@@ -245,12 +245,12 @@ fn test_aes() {
     const ELEMENTS: usize = 16;
     let base_ring = Zn::<256>::RING;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut rand_bytes = |num_bytes| {
         assert_eq!(num_bytes % 8, 0);
         let mut bytes = vec![];
         for _ in 0..num_bytes / 8 {
-            bytes.extend_from_slice(&rng.gen::<u64>().to_ne_bytes())
+            bytes.extend_from_slice(&rng.random::<u64>().to_ne_bytes())
         }
         bytes
     };

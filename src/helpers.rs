@@ -106,7 +106,7 @@ use fips203::traits::KeyGen;
 #[test]
 fn test_encrypt_and_decrypt() {
     use rand::Rng;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut to_enc = [0u8; 32];
     rng.fill(&mut to_enc);
     let (ek, dk) = fips203::ml_kem_768::KG::try_keygen().unwrap();
