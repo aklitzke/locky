@@ -1,7 +1,8 @@
 //! This file does simple SHA-3 based commitments
 use crate::mlwe::{N, Q as mlweQ};
 use aes_kw::KekAes256;
-use ml_kem_rs::ml_kem_768::{CipherText, EncapsKey};
+use fips203::ml_kem_768::{CipherText, EncapsKey};
+use fips203::traits::{Encaps, SerDes};
 use sha3::digest::{ExtendableOutput, XofReader};
 use sha3::{Sha3_256, Shake128};
 
@@ -83,8 +84,8 @@ pub fn sample_ntt(mut byte_stream_b: impl XofReader) -> [u16; N] {
 
 /// Encrypt a user key with their provided ephermeral key
 pub fn encrypt_key(to_enc: [u8; 32], ek: &EncapsKey) -> (CipherText, [u8; 40]) {
-    let (ssk, ct) = ek.encaps();
-    let kek = KekAes256::from(ssk.to_bytes());
+    let (ssk, ct) = ek.try_encaps().unwrap();
+    let kek = KekAes256::from(ssk.into_bytes());
     let mut res = [0u8; 40];
     kek.wrap(&to_enc, &mut res).unwrap();
     (ct, res)
@@ -93,24 +94,27 @@ pub fn encrypt_key(to_enc: [u8; 32], ek: &EncapsKey) -> (CipherText, [u8; 40]) {
 // currently only used in testing
 // will probably get used in an SDK
 #[cfg(test)]
-use ml_kem_rs::ml_kem_768::DecapsKey;
+use fips203::ml_kem_768::DecapsKey;
+#[cfg(test)]
+use fips203::traits::Decaps;
 #[cfg(test)]
 pub fn decrypt_key(dk: &DecapsKey, ct: &CipherText, to_dec: [u8; 40]) -> [u8; 32] {
-    let ssk = dk.decaps(&ct);
-    let kek = KekAes256::from(ssk.to_bytes());
+    let ssk = dk.try_decaps(&ct).unwrap();
+    let kek = KekAes256::from(ssk.into_bytes());
     let mut result = [0u8; 32];
     kek.unwrap(&to_dec, &mut result).unwrap();
     result
 }
 
+#[cfg(test)]
+use fips203::traits::KeyGen;
 #[test]
 fn test_encrypt_and_decrypt() {
-    use ml_kem_rs::ml_kem_768;
     use rand::Rng;
     let mut rng = rand::thread_rng();
     let mut to_enc = [0u8; 32];
     rng.fill(&mut to_enc);
-    let (ek, dk) = ml_kem_768::key_gen();
+    let (ek, dk) = fips203::ml_kem_768::KG::try_keygen().unwrap();
     let (ct, key_ct) = encrypt_key(to_enc, &ek);
     let decrypted = decrypt_key(&dk, &ct, key_ct);
     assert_eq!(to_enc, decrypted);
