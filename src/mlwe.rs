@@ -164,10 +164,10 @@ fn ring() -> RingHelper {
 
 impl RingHelper {
     pub fn binomial_random_poly(&self) -> El<Ring> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let bits_needed = N * ETA * 2;
         let bytes: Vec<u8> = (0..(bits_needed.div_ceil(64)))
-            .map(|_| rng.gen::<u64>().to_be_bytes())
+            .map(|_| rng.random::<u64>().to_be_bytes())
             .flatten()
             .collect();
         let bits = bv::BitVec::<_, bv::Msb0>::from_vec(bytes);
@@ -185,10 +185,10 @@ impl RingHelper {
         (0..K).map(|_| self.binomial_random_poly()).collect()
     }
     fn uniform_random_poly(&self) -> El<Ring> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         self.make_ring(
             &(0..N)
-                .map(|_| self.0.base_ring().random_element(|| rng.gen::<u64>()))
+                .map(|_| self.0.base_ring().random_element(|| rng.random::<u64>()))
                 .collect::<Vec<_>>(),
         )
     }
