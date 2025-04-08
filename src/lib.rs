@@ -1,3 +1,3 @@
-mod mlwe;
+pub mod mlwe;
 mod shamirs;
-mod helpers;
+pub mod helpers;

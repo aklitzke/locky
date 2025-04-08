@@ -5,6 +5,8 @@ use fips203::ml_kem_768::{CipherText, EncapsKey};
 use fips203::traits::{Encaps, SerDes};
 use sha3::digest::{ExtendableOutput, XofReader};
 use sha3::{Sha3_256, Shake128};
+use fips203::ml_kem_768::DecapsKey;
+use fips203::traits::Decaps;
 
 const Q: u32 = mlweQ as u32;
 
@@ -91,13 +93,6 @@ pub fn encrypt_key(to_enc: [u8; 32], ek: &EncapsKey) -> (CipherText, [u8; 40]) {
     (ct, res)
 }
 
-// currently only used in testing
-// will probably get used in an SDK
-#[cfg(test)]
-use fips203::ml_kem_768::DecapsKey;
-#[cfg(test)]
-use fips203::traits::Decaps;
-#[cfg(test)]
 pub fn decrypt_key(dk: &DecapsKey, ct: &CipherText, to_dec: [u8; 40]) -> [u8; 32] {
     let ssk = dk.try_decaps(&ct).unwrap();
     let kek = KekAes256::from(ssk.into_bytes());
