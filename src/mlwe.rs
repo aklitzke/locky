@@ -778,13 +778,12 @@ fn test_plain_ss_mlwe_once() {
 
 #[test]
 fn test_mlwe_once() {
-    use feanor_math::default_memory_provider;
     use feanor_math::rings::extension::extension_impl::FreeAlgebraImpl;
     use feanor_math::rings::extension::FreeAlgebraStore;
-    use feanor_math::vector::vec_fn::VectorFn;
+    use feanor_math::seq::VectorFn;
     let base_ring = Fp::<Q>::RING;
     let x_pow_rank = vec![base_ring.neg_one(); N];
-    let ring = FreeAlgebraImpl::new(base_ring, x_pow_rank, default_memory_provider!());
+    let ring = FreeAlgebraImpl::new(base_ring, x_pow_rank);
 
     const DEBUGPRINT: bool = false;
     let mut rng = rand::rng();

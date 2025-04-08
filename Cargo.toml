@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# feanor-math = { version = "2.0.0", features = ["unstable-enable"] }
-feanor-math = "1.7.5"
+feanor-math = { version = "2.0.0", features = ["unstable-enable"] }
+# feanor-math = "1.7.5"
 rand = "0.9.0"
 aes-gcm = "0.10.3"
 aes-kw = "0.2.1"
