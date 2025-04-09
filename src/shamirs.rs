@@ -95,14 +95,11 @@ fn test_generate_shares() {
     use feanor_math::rings::zn::zn_static::Fp;
     const ELEMENTS: usize = 256;
     let base_ring = Fp::<3329>::RING;
-    // let x_pow_rank = vec![base_ring.neg_one(); ELEMENTS];
-    // let ring = feanor_math::rings::extension::extension_impl::FreeAlgebraImpl::new(base_ring, x_pow_rank, default_memory_provider!());
     let ring = feanor_math::rings::poly::dense_poly::DensePolyRing::new(base_ring, "x");
     let mut random_secret = || {
         let can_secret: Vec<_> = (0..ELEMENTS)
             .map(|_| base_ring.random_element(rand::random::<u64>))
             .collect();
-        // ring.from_canonical_basis(can_secret.into_iter())
         ring.from_terms(can_secret.into_iter().enumerate().map(|(i, x)| (x, i)))
     };
     let secret = random_secret();
@@ -133,13 +130,11 @@ fn test_z256x32() {
         ELEMENTS,
         x_pow_rank
     );
-    // let ring = feanor_math::rings::poly::dense_poly::DensePolyRing::new(base_ring, "x");
     let mut random_secret = || {
         let can_secret: Vec<_> = (0..ELEMENTS)
             .map(|_| base_ring.random_element(rand::random::<u64>))
             .collect();
         ring.from_canonical_basis(can_secret.into_iter())
-        // ring.from_terms(can_secret.into_iter().enumerate().map(|(i,x)| (x,i)))
     };
     let secret = random_secret();
     let indexes = (1..6).map(|i| {
@@ -260,12 +255,6 @@ fn test_aes() {
         x_pow_rank,
     );
 
-    // let random_secret = || {
-    //     let can_secret: Vec<_> = (0..ELEMENTS)
-    //         .map(|_| base_ring.random_element(rand::random::<u64>))
-    //         .collect();
-    //     ring.from_terms(can_secret.into_iter().enumerate().map(|(i, x)| (x, i)))
-    // };
     let main_key: [u8; ELEMENTS] = rand_bytes(ELEMENTS).try_into().unwrap();
     println!("main_key: {:?}", main_key);
     let cipher = Aes128::new((&main_key).into());
@@ -322,10 +311,6 @@ fn test_aes() {
                     .collect::<Vec<_>>()
                     .into_iter(),
             );
-            // Share {
-            //     share: ring.clone_el(&y_coord),
-            //     index: ring.clone_el(&share.index),
-            // }
             share.share = y_coord;
             share
         })
