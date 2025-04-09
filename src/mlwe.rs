@@ -783,7 +783,7 @@ fn test_mlwe_once() {
     use feanor_math::seq::VectorFn;
     let base_ring = Fp::<Q>::RING;
     let x_pow_rank = vec![base_ring.neg_one(); N];
-    let ring = FreeAlgebraImpl::new(base_ring, x_pow_rank);
+    let ring = FreeAlgebraImpl::new(base_ring, N, x_pow_rank);
 
     const DEBUGPRINT: bool = false;
     let mut rng = rand::rng();

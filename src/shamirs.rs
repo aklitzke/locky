@@ -130,6 +130,7 @@ fn test_z256x32() {
     let x_pow_rank = vec![base_ring.neg_one(); ELEMENTS];
     let ring = feanor_math::rings::extension::extension_impl::FreeAlgebraImpl::new(
         base_ring,
+        ELEMENTS,
         x_pow_rank
     );
     // let ring = feanor_math::rings::poly::dense_poly::DensePolyRing::new(base_ring, "x");
@@ -255,6 +256,7 @@ fn test_aes() {
     let x_pow_rank = vec![base_ring.neg_one(); ELEMENTS];
     let ring = feanor_math::rings::extension::extension_impl::FreeAlgebraImpl::new(
         base_ring,
+        ELEMENTS,
         x_pow_rank,
     );
 

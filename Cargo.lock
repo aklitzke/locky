@@ -86,6 +86,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytemuck"
+version = "1.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6b1fc10dbac614ebc03540c9dbd60e83887fda27794998c6528f1782047d540"
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,12 +148,13 @@ dependencies = [
 
 [[package]]
 name = "feanor-math"
-version = "2.3.0"
+version = "3.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2711b4d70b3c982a85834b032ebc907871faa631dbfbb6355817e1e279cd14f"
+checksum = "e717318ec528c550b44eb4891d71002258d23f3b9f4b92785d3444cc8ec61d12"
 dependencies = [
  "append-only-vec",
  "atomicbox",
+ "bytemuck",
  "libc",
  "oorandom",
  "serde",
