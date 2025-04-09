@@ -120,7 +120,6 @@ fn test_generate_shares() {
 #[test]
 fn test_z256x32() {
     use feanor_math::assert_el_eq;
-    use feanor_math::default_memory_provider;
     use feanor_math::homomorphism::Homomorphism;
     use feanor_math::ring::RingStore;
     use feanor_math::rings::extension::FreeAlgebraStore;
@@ -131,8 +130,7 @@ fn test_z256x32() {
     let x_pow_rank = vec![base_ring.neg_one(); ELEMENTS];
     let ring = feanor_math::rings::extension::extension_impl::FreeAlgebraImpl::new(
         base_ring,
-        x_pow_rank,
-        default_memory_provider!(),
+        x_pow_rank
     );
     // let ring = feanor_math::rings::poly::dense_poly::DensePolyRing::new(base_ring, "x");
     let mut random_secret = || {
@@ -236,10 +234,9 @@ fn test_mpc() {
 fn test_aes() {
     use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
     use aes::Aes128;
-    use feanor_math::default_memory_provider;
     use feanor_math::homomorphism::Homomorphism;
     use feanor_math::rings::zn::zn_static::Zn;
-    use feanor_math::vector::vec_fn::VectorFn;
+    use feanor_math::seq::VectorFn;
     use rand::Rng;
 
     const ELEMENTS: usize = 16;
@@ -259,7 +256,6 @@ fn test_aes() {
     let ring = feanor_math::rings::extension::extension_impl::FreeAlgebraImpl::new(
         base_ring,
         x_pow_rank,
-        default_memory_provider!(),
     );
 
     // let random_secret = || {
@@ -304,7 +300,8 @@ fn test_aes() {
             // convert y-coordinate of share to a key to be used in AES
             let share_vec: Vec<u8> = ring
                 .wrt_canonical_basis(&share.share)
-                .to_vec()
+                .iter()
+                .collect::<Vec<u64>>()
                 .into_iter()
                 .map(|i| i.try_into().unwrap())
                 .collect();

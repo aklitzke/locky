@@ -577,12 +577,12 @@ fn test_plain_ss_mlwe() {
 fn test_a_seed() {
     let ring_h = ring();
     let a_seed_1: [u8; 32] = rand::rng().random();
-    assert_eq!(
-        ring_h.a_from_seed(&a_seed_1.clone()),
-        ring_h.a_from_seed(&a_seed_1.clone())
-    );
+    let a_1 = ring_h.a_from_seed(&a_seed_1.clone());
+    let a_1_again= ring_h.a_from_seed(&a_seed_1.clone());
+    assert!(a_1.iter().enumerate().all(|(i, a)| a.iter().enumerate().all(|(j, b)| ring_h.0.eq_el(&b, &a_1_again[i][j]))));
     let a_seed_2: [u8; 32] = rand::rng().random();
-    assert_ne!(ring_h.a_from_seed(&a_seed_1), ring_h.a_from_seed(&a_seed_2))
+    let a_2 = ring_h.a_from_seed(&a_seed_2.clone());
+    assert!(!a_1.iter().enumerate().all(|(i, a)| a.iter().enumerate().all(|(j, b)| ring_h.0.eq_el(&b, &a_2[i][j]))));
 }
 
 #[test]
@@ -601,10 +601,10 @@ fn test_plain_ss_mlwe_once() {
         print_vec(&sk3, &ring);
     }
     // compute a test, shared sk <= sk1 + sk2 + sk3
-    let sk: Vec<Vec<u64>> = [&sk1, &sk2, &sk3]
+    let sk = [&sk1, &sk2, &sk3]
         .into_iter()
         .map(|e| clone_vec(e, &ring).collect())
-        .fold(vec![ring.zero(); K], |acc, i| mat_add_vec(acc, i, &ring));
+        .fold((0..K).map(|_| ring.zero()).collect(), |acc, i| mat_add_vec(acc, i, &ring));
     if DEBUGPRINT {
         print_vec(&sk, &ring);
     }
@@ -691,7 +691,7 @@ fn test_plain_ss_mlwe_once() {
     let pk = [pk1, pk2, pk3]
         .iter()
         .map(|pki| clone_vec(pki, &ring).collect())
-        .fold(vec![ring.zero(); K], |acc, el| mat_add_vec(acc, el, &ring));
+        .fold((0..K).map(|_| ring.zero()).collect(), |acc, i| mat_add_vec(acc, i, &ring));
 
     if DEBUGPRINT {
         print!("pk: ");
@@ -916,7 +916,7 @@ fn test_mlwe_once() {
     assert_eq!(pt.len(), 1);
     let pt = pt.pop().unwrap();
     let pt = ring.sub(v, pt);
-    let pt: Vec<_> = ring.wrt_canonical_basis(&pt).to_vec();
+    let pt: Vec<_> = ring.wrt_canonical_basis(&pt).iter().collect();
     println!("pt: {:?}", pt);
     let plaintext: Vec<_> = pt
         .iter()
