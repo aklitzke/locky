@@ -1,6 +1,4 @@
 use crate::helpers::{sample_ntt, xof};
-#[cfg(test)]
-use crate::shamirs::{assemble_share_ref, interpolate_shares_ref};
 use crate::shamirs::{generate_shares, mul_by_lagrange};
 use bitvec::prelude as bv;
 use feanor_math::divisibility::{DivisibilityRing, DivisibilityRingStore};
@@ -11,6 +9,8 @@ use feanor_math::rings::poly::dense_poly::DensePolyRing;
 use feanor_math::rings::poly::PolyRingStore;
 use feanor_math::rings::zn::zn_static::Fp;
 use rand::Rng;
+#[cfg(test)]
+use crate::shamirs::{assemble_share_ref, interpolate_shares_ref};
 
 // ml-kem 768
 pub const Q: u64 = 3329;
@@ -801,10 +801,6 @@ fn test_mlwe_once() {
             let x = (0..ETA).fold(0, |x, j| x + (bits[(ETA * i * 2) + j] as i32));
             let y = (0..ETA).fold(0, |y, j| y + (bits[(ETA * i * 2) + ETA + j] as i32));
             base_ring.int_hom().map(x - y)
-            // simulate weird cases, remove
-            // base_ring.int_hom().map((ETA as i32))
-            // base_ring.int_hom().map(0)
-            // base_ring.int_hom().map(x - y) * 2
         });
         ring.from_canonical_basis(coeffs)
     };
@@ -820,26 +816,17 @@ fn test_mlwe_once() {
     }
 
     println!("generating s");
-    // let s: Vec<_> = (0..K).map(|_| binomial_random_poly()).collect();
     let s: Vec<_> = (0..K)
         .map(|_| ring.mul(ring.int_hom().map(3), binomial_random_poly()))
         .collect();
-    // let s: Vec<_> = (0..K).map(|_| uniform_random_poly()).collect();
-    // let s: Vec<_> = (0..K)
-    //     .map(|_| ring.from_canonical_basis(vec![Q - 1; N].into_iter()))
-    //     .collect();
     if DEBUGPRINT {
         print_vec(&s, &ring);
     }
 
     println!("generating e");
-    // let e: Vec<_> = (0..K).map(|_| binomial_random_poly()).collect();
     let e: Vec<_> = (0..K)
         .map(|_| ring.mul(ring.int_hom().map(3), binomial_random_poly()))
         .collect();
-    // let e: Vec<_> = (0..K)
-    //     .map(|_| ring.from_canonical_basis(vec![Q - 1; N].into_iter()))
-    //     .collect();
     if DEBUGPRINT {
         print_vec(&e, &ring);
     }
@@ -864,16 +851,8 @@ fn test_mlwe_once() {
 
     println!("generating r, e1, e2");
     let r: Vec<_> = (0..K).map(|_| binomial_random_poly()).collect();
-    // let r: Vec<_> = (0..K)
-    //     .map(|_| ring.from_canonical_basis(vec![Q - 1; N].into_iter()))
-    //     .collect();
     let e1: Vec<_> = (0..K).map(|_| binomial_random_poly()).collect();
-    // let e1: Vec<_> = (0..K)
-    //     .map(|_| ring.from_canonical_basis(vec![1; N].into_iter()))
-    //     .collect();
-    // let e2 = binomial_random_poly();
     let e2 = ring.mul(ring.int_hom().map(3), binomial_random_poly());
-    // let e2 = ring.from_canonical_basis(vec![Q - 1; N].into_iter());
     if DEBUGPRINT {
         print_vec(&r, &ring);
         print_vec(&e1, &ring);
@@ -924,5 +903,4 @@ fn test_mlwe_once() {
         .collect();
     println!("pt: {:?}", plaintext);
     assert_eq!(plaintext, plaintext_vec);
-    // return pt;
 }
