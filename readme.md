@@ -1,6 +1,6 @@
 # Locky
 
-An _experimental_ adaptation of ML-KEM-768 to the multi-party setting using threshold cryptography. This allows for post-quantum
+An _experimental_ adaptation of FIPS203 / ML-KEM-768 to the multi-party setting using threshold cryptography. This allows for post-quantum
 distributed key generation with similar security guarantees as ML-KEM
 
 Disclaimer: This project has not been built with production in mind and has known timing vulnerabilities. Do not
