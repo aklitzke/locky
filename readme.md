@@ -42,15 +42,15 @@ let a_seed: ASeed = rng.random();
 
 // Each party generates a secret with shares for each other party
 // Party 1
-let SecretAndShares { secret: secret_1, shares: shares_1 } = generate_secret_and_shares::<PARTIES>(threshold);
+let party_1 = generate_secret_and_shares::<PARTIES>(threshold);
 // Party 2
-let SecretAndShares { secret: secret_2 , shares: shares_2 } = generate_secret_and_shares::<PARTIES>(threshold);
+let party_2 = generate_secret_and_shares::<PARTIES>(threshold);
 
 // Each party sends shares to every other party, and generates a keypair from them
 // Party 1
-let keypair_1 = generate_keypair::<PARTIES>([shares_1[0], shares_2[0]], &a_seed);
+let keypair_1 = generate_keypair::<PARTIES>([party_1.shares[0], party_2.shares[0]], &a_seed);
 // Party 2
-let keypair_2 = generate_keypair::<PARTIES>([shares_2[1], shares_1[1]], &a_seed);
+let keypair_2 = generate_keypair::<PARTIES>([party_2.shares[1], party_1.shares[1]], &a_seed);
 
 // Each party publishes their public key
 // public keys are combined into one root public key
@@ -67,7 +67,10 @@ let partial_decryption_1 = partial_decrypt(&keypair_1.sk, ciphertext.1, &[1, 2])
 let partial_decryption_2 = partial_decrypt(&keypair_2.sk, ciphertext.1, &[1, 2]);
 
 // Partial decryptions are assembled to reconstitute the plaintext
-let decrypted = assemble_decryptions(ciphertext.0, [partial_decryption_1, partial_decryption_2].into_iter());
+let decrypted = assemble_decryptions(
+    ciphertext.0,
+    [partial_decryption_1, partial_decryption_2].into_iter(),
+);
 assert_eq!(decrypted, plaintext);
 ```
 
