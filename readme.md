@@ -1,19 +1,20 @@
 # Locky
 
-A Rust implementation of multi-party ML-KEM-768 (formerly CRYSTALS-Kyber) using threshold cryptography.
+An _experimental_ adaptation of ML-KEM-768 to the multi-party setting using threshold cryptography. This allows for post-quantum
+distributed key generation with similar security guarantees as ML-KEM
 
-## Overview
-
-Locky adapts FIPS 203's ML-KEM-768 (Module Learning With Errors Key Encapsulation Mechanism) for the multi-party setting using Shamir's Secret Sharing. This allows distributing the private key among multiple parties, where decryption requires a threshold number of these parties to collaborate without any single party having access to the entire private key.
-
-### Features
-
-- **Threshold Cryptography**: Distribute private keys among N parties with a customizable threshold (t-of-N)
-- **Post-Quantum Security**: Based on the ML-KEM-768 algorithm, resistant to quantum attacks
-- **FIPS 203 Compatibility**: Uses the standardized implementation of ML-KEM-768
-- **Shamir's Secret Sharing**: Secure secret splitting with polynomial interpolation
+Disclaimer: This project has not been built with production in mind and has known timing vulnerabilities. Do not
+use it to encrypt anything of value!
 
 ## Technical Background
+
+The implementation handles cryptographic primitives for:
+
+1. Secret key generation and sharing
+2. Distributed public key generation
+3. Encryption against the combined public key
+4. Partial decryption by individual keyholders
+5. Combining partial decryptions to recover the plaintext
 
 Locky implements a threshold version of the ML-KEM-768 cryptosystem with the following characteristics:
 
@@ -22,39 +23,7 @@ Locky implements a threshold version of the ML-KEM-768 cryptosystem with the fol
 - Security parameter: k = 3 (768-bit security level)
 - Error parameter: η = 2
 
-The implementation handles:
-
-1. Secret key generation and sharing
-2. Distributed public key generation
-3. Encryption against the combined public key
-4. Partial decryption by individual keyholders
-5. Combining partial decryptions to recover the plaintext
-
-## Installation
-
-Add Locky to your `Cargo.toml`:
-
-```toml
-[dependencies]
-locky = "0.0.1"
-```
-
 ## Usage Examples
-
-### Secret Generation and Key Sharing
-
-```rust
-use locky::mlwe::{generate_secret_and_shares, SecretAndShares};
-
-// Generate a secret key and share it among 5 parties with a threshold of 3
-const PARTIES: usize = 5;
-let threshold = 3;
-let SecretAndShares { secret, shares } = generate_secret_and_shares::<PARTIES>(threshold);
-
-// Distribute shares[i] to party i
-```
-
-### Distributed Public Key Generation
 
 ```rust
 use locky::mlwe::{
@@ -102,34 +71,14 @@ let decrypted = assemble_decryptions(ciphertext.0, [partial_decryption_1, partia
 assert_eq!(decrypted, plaintext);
 ```
 
-### Module Structure
+## Installation
 
-- `mlwe.rs`: Core implementation of multi-party ML-KEM
-- `shamirs.rs`: Implementation of Shamir's Secret Sharing
-- `helpers.rs`: Utility functions for hashing, sampling, and standard ML-KEM operations
+Check out the repo and add Locky's repo root to your `Cargo.toml`:
 
-### Mathematical Foundation
-
-The implementation leverages:
-
-- **Module Learning With Errors**: A post-quantum secure cryptographic primitive
-- **Polynomial Rings**: Operations over Zq[x]/(x^n + 1)
-- **Number Theoretic Transform**: Efficient polynomial multiplication
-- **Lagrange Interpolation**: For reconstructing secrets from shares
-
-## Dependencies
-
-- `feanor-math`: Mathematical operations for polynomial rings
-- `fips203`: FIPS 203 ML-KEM implementation
-- `rand`: Random number generation
-- `bitvec`: Bit manipulation
-- `sha3`: Cryptographic hashing
-- `aes-gcm`: AES-GCM authenticated encryption
-- `aes-kw`: AES Key Wrap
-
-## License
-
-This project is available under [LICENSE].
+```toml
+[dependencies]
+locky = { path = "../locky" }
+```
 
 ## Contributing
 
