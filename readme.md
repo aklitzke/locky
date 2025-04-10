@@ -57,7 +57,10 @@ let SecretAndShares { secret, shares } = generate_secret_and_shares::<PARTIES>(t
 ### Distributed Public Key Generation
 
 ```rust
-use locky::mlwe::{generate_keypair, add_public_keys, ASeed, Keypair, Pk, generate_secret_and_shares, SecretAndShares, Plaintext, encrypt, partial_decrypt, assemble_decryptions};
+use locky::mlwe::{
+    add_public_keys, assemble_decryptions, encrypt, generate_keypair, generate_secret_and_shares,
+    partial_decrypt, ASeed, Keypair, Pk, Plaintext, SecretAndShares,
+};
 use rand::Rng;
 
 const PARTIES: usize = 2;
@@ -65,7 +68,7 @@ const PARTIES: usize = 2;
 let threshold = 1;
 
 // The parties collaborate to generate a public random seed
-# let mut rng = rand::rng();
+let mut rng = rand::rng();
 let a_seed: ASeed = rng.random();
 
 // Each party generates a secret with shares for each other party

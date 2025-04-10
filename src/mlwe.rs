@@ -1,4 +1,6 @@
 use crate::helpers::{sample_ntt, xof};
+#[cfg(test)]
+use crate::shamirs::{assemble_share_ref, interpolate_shares_ref};
 use crate::shamirs::{generate_shares, mul_by_lagrange};
 use bitvec::prelude as bv;
 use feanor_math::divisibility::{DivisibilityRing, DivisibilityRingStore};
@@ -9,8 +11,6 @@ use feanor_math::rings::poly::dense_poly::DensePolyRing;
 use feanor_math::rings::poly::PolyRingStore;
 use feanor_math::rings::zn::zn_static::Fp;
 use rand::Rng;
-#[cfg(test)]
-use crate::shamirs::{assemble_share_ref, interpolate_shares_ref};
 
 // ml-kem 768
 pub const Q: u64 = 3329;
@@ -134,12 +134,11 @@ where
     let ring_hs = hs.map(|h| ring.decompress(h));
     let assembled = ring.assemble_decryptions(ring_v, ring_hs);
     let mut bits = bv::BitVec::<_, bv::Msb0>::repeat(false, N);
-    ring.0.terms(&assembled)
-        .for_each(|(i, pow)| {
-            // println!("is: {} {}", *i, pow);
-            assert!(*i == 1);
-            bits.set(pow, true);
-        });
+    ring.0.terms(&assembled).for_each(|(i, pow)| {
+        // println!("is: {} {}", *i, pow);
+        assert!(*i == 1);
+        bits.set(pow, true);
+    });
     bits.into_vec().try_into().unwrap()
 }
 
@@ -578,11 +577,17 @@ fn test_a_seed() {
     let ring_h = ring();
     let a_seed_1: [u8; 32] = rand::rng().random();
     let a_1 = ring_h.a_from_seed(&a_seed_1.clone());
-    let a_1_again= ring_h.a_from_seed(&a_seed_1.clone());
-    assert!(a_1.iter().enumerate().all(|(i, a)| a.iter().enumerate().all(|(j, b)| ring_h.0.eq_el(&b, &a_1_again[i][j]))));
+    let a_1_again = ring_h.a_from_seed(&a_seed_1.clone());
+    assert!(a_1.iter().enumerate().all(|(i, a)| a
+        .iter()
+        .enumerate()
+        .all(|(j, b)| ring_h.0.eq_el(&b, &a_1_again[i][j]))));
     let a_seed_2: [u8; 32] = rand::rng().random();
     let a_2 = ring_h.a_from_seed(&a_seed_2.clone());
-    assert!(!a_1.iter().enumerate().all(|(i, a)| a.iter().enumerate().all(|(j, b)| ring_h.0.eq_el(&b, &a_2[i][j]))));
+    assert!(!a_1.iter().enumerate().all(|(i, a)| a
+        .iter()
+        .enumerate()
+        .all(|(j, b)| ring_h.0.eq_el(&b, &a_2[i][j]))));
 }
 
 #[test]
@@ -604,7 +609,9 @@ fn test_plain_ss_mlwe_once() {
     let sk = [&sk1, &sk2, &sk3]
         .into_iter()
         .map(|e| clone_vec(e, &ring).collect())
-        .fold((0..K).map(|_| ring.zero()).collect(), |acc, i| mat_add_vec(acc, i, &ring));
+        .fold((0..K).map(|_| ring.zero()).collect(), |acc, i| {
+            mat_add_vec(acc, i, &ring)
+        });
     if DEBUGPRINT {
         print_vec(&sk, &ring);
     }
@@ -691,7 +698,9 @@ fn test_plain_ss_mlwe_once() {
     let pk = [pk1, pk2, pk3]
         .iter()
         .map(|pki| clone_vec(pki, &ring).collect())
-        .fold((0..K).map(|_| ring.zero()).collect(), |acc, i| mat_add_vec(acc, i, &ring));
+        .fold((0..K).map(|_| ring.zero()).collect(), |acc, i| {
+            mat_add_vec(acc, i, &ring)
+        });
 
     if DEBUGPRINT {
         print!("pk: ");
@@ -788,8 +797,9 @@ fn test_mlwe_once() {
     const DEBUGPRINT: bool = false;
     let mut rng = rand::rng();
     let mut rng2 = rng.clone();
-    let mut uniform_random_poly =
-        || ring.from_canonical_basis((0..N).map(|_| base_ring.random_element(|| rng.random::<u64>())));
+    let mut uniform_random_poly = || {
+        ring.from_canonical_basis((0..N).map(|_| base_ring.random_element(|| rng.random::<u64>())))
+    };
     let mut binomial_random_poly = || {
         let bits_needed = N * ETA * 2;
         let bytes: Vec<u8> = (0..(bits_needed.div_ceil(64)))

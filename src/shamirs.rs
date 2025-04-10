@@ -124,9 +124,7 @@ fn test_z256x32() {
     let base_ring = Zn::<256>::RING;
     let x_pow_rank = vec![base_ring.neg_one(); ELEMENTS];
     let ring = feanor_math::rings::extension::extension_impl::FreeAlgebraImpl::new(
-        base_ring,
-        ELEMENTS,
-        x_pow_rank
+        base_ring, ELEMENTS, x_pow_rank,
     );
     let mut random_secret = || {
         let can_secret: Vec<_> = (0..ELEMENTS)

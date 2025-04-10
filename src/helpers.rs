@@ -1,12 +1,12 @@
 //! This file does simple SHA-3 based commitments
 use crate::mlwe::{N, Q as mlweQ};
 use aes_kw::KekAes256;
+use fips203::ml_kem_768::DecapsKey;
 use fips203::ml_kem_768::{CipherText, EncapsKey};
+use fips203::traits::Decaps;
 use fips203::traits::{Encaps, SerDes};
 use sha3::digest::{ExtendableOutput, XofReader};
 use sha3::{Sha3_256, Shake128};
-use fips203::ml_kem_768::DecapsKey;
-use fips203::traits::Decaps;
 
 const Q: u32 = mlweQ as u32;
 
