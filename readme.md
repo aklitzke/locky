@@ -57,61 +57,47 @@ let SecretAndShares { secret, shares } = generate_secret_and_shares::<PARTIES>(t
 ### Distributed Public Key Generation
 
 ```rust
-use locky::mlwe::{generate_keypair, add_public_keys, ASeed, Keypair, Pk};
+use locky::mlwe::{generate_keypair, add_public_keys, ASeed, Keypair, Pk, generate_secret_and_shares, SecretAndShares, Plaintext, encrypt, partial_decrypt, assemble_decryptions};
 use rand::Rng;
 
-// Each party generates their own keypair using their share
-let mut rng = rand::thread_rng();
-let a_seed: ASeed = rng.gen();
+const PARTIES: usize = 2;
+// t + 1 = 2 parties required to decrypt
+let threshold = 1;
 
-// Party 1 generates their keypair
-let Keypair { sk: sk1, pk: pk1 } = generate_keypair::<PARTIES>(party1_shares, &a_seed);
+// The parties collaborate to generate a public random seed
+# let mut rng = rand::rng();
+let a_seed: ASeed = rng.random();
 
-// Party 2 generates their keypair
-let Keypair { sk: sk2, pk: pk2 } = generate_keypair::<PARTIES>(party2_shares, &a_seed);
+// Each party generates a secret with shares for each other party
+// Party 1
+let SecretAndShares { secret: secret_1, shares: shares_1 } = generate_secret_and_shares::<PARTIES>(threshold);
+// Party 2
+let SecretAndShares { secret: secret_2 , shares: shares_2 } = generate_secret_and_shares::<PARTIES>(threshold);
 
-// ... Party N generates their keypair
+// Each party sends shares to every other party, and generates a keypair from them
+// Party 1
+let keypair_1 = generate_keypair::<PARTIES>([shares_1[0], shares_2[0]], &a_seed);
+// Party 2
+let keypair_2 = generate_keypair::<PARTIES>([shares_2[1], shares_1[1]], &a_seed);
 
-// Combine public keys
-let combined_pk = add_public_keys(pk1, pk2);
-// Continue combining all public keys
+// Each party publishes their public key
+// public keys are combined into one root public key
+let public_key = add_public_keys(keypair_1.pk, keypair_2.pk);
+
+// Anyone with the root public key and a_seed can encrypt data for the parties to decrypt
+let plaintext: Plaintext = rand::rng().random();
+let ciphertext = encrypt(&public_key, &a_seed, &plaintext);
+
+// The ciphertext is sent to each party for a partial decryption
+// Party 1
+let partial_decryption_1 = partial_decrypt(&keypair_1.sk, ciphertext.1, &[1, 2]);
+// Party 2
+let partial_decryption_2 = partial_decrypt(&keypair_2.sk, ciphertext.1, &[1, 2]);
+
+// Partial decryptions are assembled to reconstitute the plaintext
+let decrypted = assemble_decryptions(ciphertext.0, [partial_decryption_1, partial_decryption_2].into_iter());
+assert_eq!(decrypted, plaintext);
 ```
-
-### Encryption
-
-```rust
-use locky::mlwe::{encrypt, Plaintext, CiphertextU, CiphertextV};
-
-// The plaintext (32 bytes for ML-KEM-768)
-let plaintext: Plaintext = [/* your 32-byte data */; 32];
-
-// Encrypt using the combined public key
-let (v, u) = encrypt(&combined_pk, &a_seed, &plaintext);
-```
-
-### Partial Decryption and Combining Results
-
-```rust
-use locky::mlwe::{partial_decrypt, assemble_decryptions};
-
-// Each party performs partial decryption
-let participating_indexes = [1, 2, 3]; // Indexes of participating parties (assuming threshold = 3)
-
-// Party 1 performs partial decryption
-let h1 = partial_decrypt((sk1.0, &sk1.1), u.clone(), &participating_indexes);
-
-// Party 2 performs partial decryption
-let h2 = partial_decrypt((sk2.0, &sk2.1), u.clone(), &participating_indexes);
-
-// Party 3 performs partial decryption
-let h3 = partial_decrypt((sk3.0, &sk3.1), u.clone(), &participating_indexes);
-
-// Combine partial decryptions to get the original plaintext
-let decrypted = assemble_decryptions(v, [h1, h2, h3].into_iter());
-assert_eq!(plaintext, decrypted);
-```
-
-## Implementation Details
 
 ### Module Structure
 

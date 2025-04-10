@@ -111,7 +111,7 @@ pub fn encrypt(pk: &Pk, a_seed: &ASeed, plaintext: &Plaintext) -> (CiphertextV, 
     (ring.compress(v), ring.compress_vec(u))
 }
 
-pub fn partial_decrypt(sk: (u32, &Sk), u: CiphertextU, indexes: &[u32]) -> CiphertextV {
+pub fn partial_decrypt(sk: &(u32, Sk), u: CiphertextU, indexes: &[u32]) -> CiphertextV {
     let ring = ring();
     let secret = VecShare {
         shares: ring.decompress_vec(sk.1.clone()),
@@ -561,7 +561,7 @@ fn test_compressed_ss_mlwe_once() {
     let indexes: Vec<_> = (1..PARTIES as u32 + 1).collect();
     let hs = sks
         .into_iter()
-        .map(|sk| partial_decrypt((sk.0, &sk.1), u.clone(), &indexes));
+        .map(|sk| partial_decrypt(&sk, u.clone(), &indexes));
 
     let plaintext = assemble_decryptions(v, hs);
     assert_eq!(plaintext, pt);
